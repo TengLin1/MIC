@@ -66,8 +66,8 @@ class Trainer:
             accs0 = []
             accs = []
             for j in range(0, labels.shape[1]):
-                loss1 = self.criterion_2(outputs[j], labels[:, j]).detach()
-                loss = loss1 * self.criterion_f[j](outputs[j], labels[:, j])
+                # loss1 = self.criterion_2(outputs[j], labels[:, j]).detach()
+                loss = self.criterion_f[j](outputs[j], labels[:, j])
                 loss_all += loss
                 # loss.backward(retain_graph = True)
                 acc0 = (outputs[j].argmax(dim=-1) == labels[:, j]).sum()
@@ -151,8 +151,8 @@ class Trainer:
                 # accs1.append(acc.item())
                 accs1.append(acc)
                 # print(outputs[i])
-                loss1 = self.criterion_2(outputs[j], labels[:, j]).detach()
-                loss = loss1 * self.criterion_f[j](outputs[j], labels[:, j])
+                # loss1 = self.criterion_2(outputs[j], labels[:, j]).detach()
+                loss = self.criterion_f[j](outputs[j], labels[:, j])
                 # loss = self.criterion_f[j](outputs[j], labels[:, j]) * self.criterion_2(outputs[j], labels[:, j])
                 loss_all += loss
 

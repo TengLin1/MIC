@@ -64,7 +64,7 @@ def create_examples(args,
     X = X_file.iloc[:, list(range(0, X_file.shape[1]))]  # X_file.shape[1]
     X = X.values
     # XGB_file = pd.read_csv("data/XGB_importance_class_" + str(ant) + ".csv", index_col=0)
-    XGB_file = pd.read_csv("../data/att_weight_2000.csv", index_col=0)
+    XGB_file = pd.read_csv("../data/XGB_importance_" + str(args.max_seq_len) + ".csv", index_col=0)
     print("XGB file is imported")
     XGB = XGB_file.iloc[:, 1]  # X_file.shape[1]
     XGB = XGB.values.reshape(XGB.shape[0], 1)
@@ -116,7 +116,7 @@ def create_examples(args,
                       [16.0, 32.0, 256.0, 64.0, 128.0],
                       [32.0, 1.0, 2.0, 4.0, 8.0, 16.0],
                       [0.5, 0.25, 16.0, 1.0, 2.0, 4.0, 8.0],
-                      [1.0, 2.0, 4.0, 8.0, 16.0, 32.0],
+                      [1.0, 2.0, 4.0, 8.0, 16.0, 32.0, 64.0],
                       [4.0, 32.0, 8.0, 16.0],
                       [0.25, 0.5, 1.0, 8.0, 2.0, 4.0]]
     else:
