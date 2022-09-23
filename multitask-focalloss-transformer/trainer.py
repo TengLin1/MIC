@@ -61,14 +61,13 @@ class Trainer:
         for i, batch in enumerate(self.train_loader):
             inputs, labels = map(lambda x: x.to(self.device), batch)
             get_local.clear()
-            outputs, attention_weights, pool_out = self.model(inputs)
-            # print(pool_out.argmax(dim=-1))
+            outputs, attention_weights = self.model(inputs)
             loss_all = 0
             accs0 = []
             accs = []
             for j in range(0, labels.shape[1]):
                 loss1 = self.criterion_2(outputs[j], labels[:, j]).detach()
-                loss = self.criterion_f[j](outputs[j], labels[:, j])
+                loss = loss1 * self.criterion_f[j](outputs[j], labels[:, j])
                 loss_all += loss
                 # loss.backward(retain_graph = True)
                 acc0 = (outputs[j].argmax(dim=-1) == labels[:, j]).sum()
@@ -78,8 +77,8 @@ class Trainer:
                 label_list = [float(self.all_labels[j][n]) for n in labels[:, j]]
                 label_list1 = [float(n) for n in labels[:, j]]
                 label_t = torch.tensor(label_list1, requires_grad=True).to(self.device)
-                acc3 = (output >= label_t / 4).sum()
-                acc4 = (output <= label_t * 4).sum()
+                acc3 = (output >= label_t / 2).sum()
+                acc4 = (output <= label_t * 2).sum()
                 if j == 0:
                     for p in output.cpu().detach().numpy():
                         pred.append(p)
@@ -116,8 +115,7 @@ class Trainer:
         for i, batch in enumerate(self.test_loader):
             inputs, labels = map(lambda x: x.to(self.device), batch)
             get_local.clear()
-            outputs, attention_weights, pool_out = self.model(inputs)
-
+            outputs, attention_weights = self.model(inputs)
             loss_all = 0
             accs0 = []
             accs = []
@@ -154,7 +152,7 @@ class Trainer:
                 accs1.append(acc)
                 # print(outputs[i])
                 loss1 = self.criterion_2(outputs[j], labels[:, j]).detach()
-                loss = self.criterion_f[j](outputs[j], labels[:, j])
+                loss = loss1 * self.criterion_f[j](outputs[j], labels[:, j])
                 # loss = self.criterion_f[j](outputs[j], labels[:, j]) * self.criterion_2(outputs[j], labels[:, j])
                 loss_all += loss
 
@@ -171,11 +169,17 @@ class Trainer:
             ave_row += sum(x) / n_samples
         print('ave = ', ave_row / len(self.n_classes))
 
+        ave = 0
+        for x in zip(*accs_all):
+            # print("acc: {:.4f} ".format(sum(x)/n_samples))
+            ave += sum(x)/n_samples
+        print('ave = ', ave/len(self.n_classes))
+
         ave1 = 0
         for x in zip(*accs1_all):
             # print("acc: {:.4f} ".format(sum(x)/n_samples))
             ave1 += sum(x) / n_samples
-        print('fold ave = ', ave1 / len(self.n_classes))
+        print('ave = ', ave1 / len(self.n_classes))
 
         lr = self.optimizer.state_dict()['param_groups'][0]['lr']
         return lr, losses / n_batches, [(sum(x) / n_samples) for x in zip(*accs0_all)], [(sum(x) / n_samples) for x in

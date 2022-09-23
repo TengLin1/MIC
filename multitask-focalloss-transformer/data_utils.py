@@ -63,8 +63,8 @@ def create_examples(args,
     print("input file is imported")
     X = X_file.iloc[:, list(range(0, X_file.shape[1]))]  # X_file.shape[1]
     X = X.values
-    XGB_file = pd.read_csv("../data/XGB_importance_200.csv", index_col=0)
-    # XGB_file = pd.read_csv("../data/att_weight_2000.csv", index_col=0)
+    # XGB_file = pd.read_csv("data/XGB_importance_class_" + str(ant) + ".csv", index_col=0)
+    XGB_file = pd.read_csv("../data/att_weight_2000.csv", index_col=0)
     print("XGB file is imported")
     XGB = XGB_file.iloc[:, 1]  # X_file.shape[1]
     XGB = XGB.values.reshape(XGB.shape[0], 1)
@@ -74,11 +74,10 @@ def create_examples(args,
     Xxgb = Xxgb[:, :Xxgb.shape[1] - 1].T
     # columns = X.columns
     print(X.shape)
-    # if ant == 0:
-    #     y_list = list([8])#, 1, 2, 4, 5, 6, 7, 8, 9, 11, 13, 14
-    # else:
-    #     y_list = list([3, 12])#
-    y_list = list([ant])
+    if ant == 0:
+        y_list = list([0, 1, 2, 4, 5, 6, 7, 8, 9, 11, 13, 14])
+    else:
+        y_list = list([3, 12])#
     y = feature_inp.iloc[:, y_list]  # list([0,1,2,3,5,6,7,8,9,11,13,14])y_list
     y = y.values.reshape(y.shape[0], len(y_list))
     Xy = np.hstack((y, Xxgb))
@@ -97,51 +96,31 @@ def create_examples(args,
     ''' train data set'''
     for i in range(len(y_train)):
         text = ''.join(alle + ' ' for alle in X_train[i])
-        text = '[CLS] ' + text
-        print('X =', text)
         example = InputExample(text, y_train[i])
         train_examples.append(example)
 
     ''' test data set'''
     test_examples = []
     test_all_label_ids = []
-
     for i in range(len(y_test)):
         text = ''.join(alle + ' ' for alle in X_test[i])
-        text = '[CLS] ' + text
         example = InputExample(text, y_test[i])
         test_examples.append(example)
-    all_labelss_15 = [[32.0, 1.0, 2.0, 4.0, 16.0, 8.0],
+    if ant == 0:
+        all_labelss = [[32.0, 1.0, 2.0, 4.0, 16.0, 8.0],
                       [32.0, 16.0, 1.0, 2.0, 8.0, 4.0],
                       [0.25, 16.0, 32.0, 0.5, 1.0, 2.0, 4.0, 8.0, 64.0],
-                      [1.0, 2.0, 4.0, 8.0, 16.0],
                       [2.0, 4.0, 8.0, 16.0, 32.0],
                       [0.015, 0.01, 0.03, 0.06, 0.12, 0.125, 0.25, 0.5, 1.0, 2.0],
                       [0.125, 0.12, 0.25, 0.5, 1.0, 2.0, 4.0],
                       [16.0, 32.0, 256.0, 64.0, 128.0],
                       [32.0, 1.0, 2.0, 4.0, 8.0, 16.0],
                       [0.5, 0.25, 16.0, 1.0, 2.0, 4.0, 8.0],
-                      [16.0, 32.0, 64.0, 8.0],
                       [1.0, 2.0, 4.0, 8.0, 16.0, 32.0],
-                      [2.0, 4.0, 8.0, 64.0, 16.0, 32.0],
                       [4.0, 32.0, 8.0, 16.0],
                       [0.25, 0.5, 1.0, 8.0, 2.0, 4.0]]
-    all_labelss = [all_labelss_15[ant]]
-    # if ant == 0:
-    #     all_labelss = [[32.0, 1.0, 2.0, 4.0, 16.0, 8.0],
-    #                   [32.0, 16.0, 1.0, 2.0, 8.0, 4.0],
-    #                   [0.25, 16.0, 32.0, 0.5, 1.0, 2.0, 4.0, 8.0, 64.0],
-    #                   [2.0, 4.0, 8.0, 16.0, 32.0],
-    #                   [0.015, 0.01, 0.03, 0.06, 0.12, 0.125, 0.25, 0.5, 1.0, 2.0],
-    #                   [0.125, 0.12, 0.25, 0.5, 1.0, 2.0, 4.0],
-    #                   [16.0, 32.0, 256.0, 64.0, 128.0],
-    #                   [32.0, 1.0, 2.0, 4.0, 8.0, 16.0],
-    #                   [0.5, 0.25, 16.0, 1.0, 2.0, 4.0, 8.0],
-    #                   [1.0, 2.0, 4.0, 8.0, 16.0, 32.0],
-    #                   [4.0, 32.0, 8.0, 16.0],
-    #                   [0.25, 0.5, 1.0, 8.0, 2.0, 4.0]]
-    # else:
-    #     all_labelss = [[1.0, 2.0, 4.0, 8.0, 16.0], [2.0, 4.0, 8.0, 64.0, 16.0, 32.0]]
+    else:
+        all_labelss = [[1.0, 2.0, 4.0, 8.0, 16.0], [2.0, 4.0, 8.0, 64.0, 16.0, 32.0]]
 
     for i in range(len(y_list)):
         train_label_dict = {label: k for k, label in enumerate(all_labelss[i])}

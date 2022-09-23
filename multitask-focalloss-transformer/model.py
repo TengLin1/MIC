@@ -23,19 +23,6 @@ class ScaledDotProductAttention(nn.Module):
 
         return output, attn_weights
 
-class BertPooler(nn.Module):
-    def __init__(self, d_model):
-        super(BertPooler, self).__init__()
-        self.dense = nn.Linear(d_model, d_model)
-        self.activation = nn.Tanh()
-
-    def forward(self, hidden_states):
-        # We "pool" the model by simply taking the hidden state corresponding
-        # to the first token.
-        first_token_tensor = hidden_states[:, 0]
-        pooled_output = self.dense(first_token_tensor)
-        pooled_output = self.activation(pooled_output)
-        return pooled_output
 
 class MultiHeadAttention(nn.Module):
     def __init__(self, d_model, n_heads):
@@ -153,14 +140,24 @@ class TransformerEncoder(nn.Module):
         self.embedding = nn.Embedding(vocab_size, d_model)
         self.pos_embedding = nn.Embedding.from_pretrained(self.sinusoid_table, freeze=True)
         self.layers = nn.ModuleList([EncoderLayer(d_model, n_heads, p_drop, d_ff) for _ in range(n_layers)])
-        self.pooler = BertPooler(d_model)
         # layers to classify
         # self.linear = nn.Linear(d_model, 6)
-        self.linear1 = nn.Linear(d_model, 6)
+        # self.linear1 = nn.Linear(d_model, 6)
         # self.linear2 = nn.Linear(d_model, n_c_2)
-        self.linearlayers = nn.ModuleList([nn.Sequential(nn.Linear(d_model, 32), nn.Linear(32, n_class)) for n_class in n_classes])
-        # self.linearlayers = nn.ModuleList([nn.Linear(d_model, n_class) for n_class in n_classes])
-
+        # self.linearlayers = nn.ModuleList([nn.Sequential(nn.Linear(d_model, 32), nn.Linear(32, n_class)) for n_class in n_classes])
+        self.linearlayers = nn.ModuleList([nn.Linear(d_model, n_class) for n_class in n_classes])
+        self.linear1 = nn.Linear(d_model, n_classes[0])
+        self.linear2 = nn.Linear(d_model, n_classes[1])
+        self.linear3 = nn.Linear(d_model, n_classes[2])
+        self.linear4 = nn.Linear(d_model, n_classes[3])
+        self.linear5 = nn.Linear(d_model, n_classes[4])
+        self.linear6 = nn.Linear(d_model, n_classes[5])
+        self.linear7 = nn.Linear(d_model, n_classes[6])
+        self.linear8 = nn.Linear(d_model, n_classes[7])
+        self.linear9 = nn.Linear(d_model, n_classes[8])
+        self.linear10 = nn.Linear(d_model, n_classes[9])
+        self.linear11 = nn.Linear(d_model, n_classes[10])
+        self.linear12 = nn.Linear(d_model, n_classes[11])
         self.dm = d_model
         self.softmax = nn.Softmax(dim=-1)
 
@@ -184,21 +181,77 @@ class TransformerEncoder(nn.Module):
             # |outputs| : (batch_size, seq_len, d_model)
             # |attn_weights| : (batch_size, n_heads, seq_len, seq_len)
             attention_weights.append(attn_weights)
-        print(attention_weights.shape)
-        outputs = self.pooler(outputs)
-        # pooled_outputs, pooled_outputs1 = torch.max(pooled_output, dim=1)
-        pooled_output_1 = self.linear1(outputs)
+        # print('outputs0 = ', outputs)
+        # print('outputs0 shape = ', outputs.shape)
         outputs, outputs1 = torch.max(outputs, dim=1)
+        # print(outputs.shape)
+        # print(torch.tensor(outputs.cpu().numpy(), dtype=torch.float))
         # |outputs| : (batch_size, d_model)
+        # outputs = torch.tensor(outputs.cpu().numpy(), device=inputs.device, dtype=torch.float)
+        # print('outputs1 = ', outputs)
+        # print('outputs1 shape = ', outputs.shape)
+        outputs_1 = self.linear1(outputs)
+        outputs_1 = self.softmax(outputs_1)
+        outputs_all.append(outputs_1)
+        outputs_2 = self.linear2(outputs)
+        outputs_2 = self.softmax(outputs_2)
+        outputs_all.append(outputs_2)
+        outputs_3 = self.linear3(outputs)
+        outputs_3 = self.softmax(outputs_3)
+        outputs_all.append(outputs_3)
+        outputs_4 = self.linear4(outputs)
+        outputs_4 = self.softmax(outputs_4)
+        outputs_all.append(outputs_4)
+        outputs_5 = self.linear5(outputs)
+        outputs_5 = self.softmax(outputs_5)
+        outputs_all.append(outputs_5)
+        outputs_6 = self.linear6(outputs)
+        outputs_6 = self.softmax(outputs_6)
+        outputs_all.append(outputs_6)
+        outputs_7 = self.linear7(outputs)
+        outputs_7 = self.softmax(outputs_7)
+        outputs_all.append(outputs_7)
+        outputs_8 = self.linear8(outputs)
+        outputs_8 = self.softmax(outputs_8)
+        outputs_all.append(outputs_8)
+        outputs_9 = self.linear9(outputs)
+        outputs_9 = self.softmax(outputs_9)
+        outputs_all.append(outputs_9)
+        outputs_10 = self.linear10(outputs)
+        outputs_10 = self.softmax(outputs_10)
+        outputs_all.append(outputs_10)
+        outputs_11 = self.linear11(outputs)
+        outputs_11 = self.softmax(outputs_11)
+        outputs_all.append(outputs_11)
+        outputs_12 = self.linear12(outputs)
+        outputs_12 = self.softmax(outputs_12)
+        outputs_all.append(outputs_12)
+        # for llayer in self.linearlayers:
+        #     # Liner
+        #     outputs_1 = llayer(outputs)
+        #     # print('liner1 = ', outputs_1)
+        #     # print('liner1 shape = ', outputs_1.shape)
+        #     # print('1 = ', outputs_1)
+        #     # Softmax
+        #     # outputs_1 = layer1(outputs_1)
+        #     outputs_1 = self.softmax(outputs_1)
+        #     # print('softmax = ', outputs_1)
+        #     # print('softmax shape = ', outputs_1.shape)
+        #     outputs_all.append(outputs_1)
+        # # Liner
+        # outputs_1 = self.linear(outputs)
+        # # Softmax
+        # outputs_1 = self.softmax(outputs_1)
+        # # Liner
+        # outputs_2 = self.linear1(outputs)
+        # # Softmax
+        # outputs_2 = self.softmax(outputs_2)
+        # # print('outputs_1 =', outputs_1)
+        # |outputs| : (batch_size, 2)
+        # outputs_all.append(outputs_1)
+        # outputs_all.append(outputs_2)
 
-        for llayer in self.linearlayers:
-            # Liner
-            outputs_1 = llayer(outputs)
-            # Softmax
-            outputs_1 = self.softmax(outputs_1)
-            outputs_all.append(outputs_1)
-
-        return outputs_all, attention_weights, pooled_output_1
+        return outputs_all, attention_weights
 
     def get_attention_padding_mask(self, q, k, pad_id):
         attn_pad_mask = k.eq(pad_id).unsqueeze(1).repeat(1, q.size(1), 1)
