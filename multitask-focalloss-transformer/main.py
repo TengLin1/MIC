@@ -34,14 +34,21 @@ def grid_show(to_shows, n_layer, ant, lenf, cols):
             axs[i, j].set_yticks([])
             axs[i, j].set_xticks([])
     # plt.show()
-    plt.savefig('vis/' + str(lenf) + '_ant' + str(ant) + '_layer' + str(n_layer) + '_attweight.png')
+    plt.savefig('vis/' + str(lenf) + '_ant' + str(ant) + '_layer' + str(n_layer) + '-focal*crloss_attweight.png')
 
 def visualize_head(att_map, ant, lenf, head):
+    # ax = plt.gca()
+    # # Plot the heatmap
+    # im = ax.imshow(att_map)#imshow
+    # # Create colorbar
+    # cbar = ax.figure.colorbar(im, ax=ax)
+    # # plt.show()
+    # plt.savefig('vis/all_xgb_10000epoch_lr0.0001_w.png')
     summary = pd.DataFrame(np.average(att_map, axis=0))  #
-    summary.to_csv('results/' + str(lenf) + '_ant' + str(ant) + '_layer2_head' + str(head) + '_plot_attweight.csv', sep='\t')
+    summary.to_csv('results/' + str(lenf) + '_ant' + str(ant) + '_layer2_head' + str(head) + '_plot-focal*crloss_attweight.csv', sep='\t')
     plt.figure(figsize=(30, 10))
     plt.plot(range(0, lenf), np.average(att_map, axis=0))
-    plt.savefig('vis/' + str(lenf) + '_ant' + str(ant) + '_layer2_head' + str(head) + '_plot_attweight.png')
+    plt.savefig('vis/' + str(lenf) + '_ant' + str(ant) + '_layer2_head' + str(head) + '_plot-focal*crloss_attweight.png')
 
 def visualize_heads(att_map, n_layer, ant, lenf, cols):
     to_shows = []
@@ -63,7 +70,7 @@ def main(args):
     result_summary = []
     results = []
     stride = 1000
-    for i in range(0, 14):#182098 // stride 1736 // stride +
+    for i in range(0, 2):#182098 // stride 1736 // stride +
         # Build DataLoader
         start = i * stride
         if i == 1736 // stride:
@@ -85,6 +92,9 @@ def main(args):
         h_ave = 0.0
         h_lr = 0
         h_loss = 0.0
+        # h_accs_t_1 = 0.0
+        # h_epoch_1 = 0
+        # h_accs0_1 = 0
 
         for epoch in range(1, args.epochs+1):
             trainer.train(epoch)
@@ -101,14 +111,21 @@ def main(args):
             results.append([epoch, lr, loss, accs0, accs_t, ave_row, ave])
         result_summary.append([h_epoch, h_lr, h_loss, h_accs0, h_accs_t, h_row, h_ave])
         result_csv = pd.DataFrame(results, columns=['epoch', 'lr', 'loss ', 'raw acc', 'acc', 'ave_row', 'ave'])
-        result_csv.to_csv('results/' + str(args.max_seq_len) + '_ant' + str(i) + 'dim32—2head-2layer-192ffn_10000epoch_results.csv', sep='\t')
+        result_csv.to_csv('results/' + str(args.max_seq_len) + '_attweight_ant' + str(i) + '_results-focal*crloss.csv', sep='\t')
     summary = pd.DataFrame(result_summary, columns=['epoch', 'lr', 'loss ', 'raw acc', 'acc', 'ave_row', 'ave'])
-    summary.to_csv('results/' + str(args.max_seq_len) + '_ant' + str(i) + 'dim32—2head-2layer-192ffn_10000epoch.csv', sep='\t')
+    summary.to_csv('results/' + str(args.max_seq_len) + '_attweight_ant' + str(i) + '-focal*crloss.csv', sep='\t')
         # summary = pd.DataFrame(result_summary, columns=['epoch', 'lr', 'loss ', 'raw acc', 'acc', 'ave_row', 'ave'])
         # summary.to_csv('results/' + str(i) + '2000_acc.csv', sep='\t')
     cache = get_local.cache
+    # print(list(cache.keys()))
     attention_maps = cache['MultiHeadAttention.forward']
+    # print(len(attention_maps))
+    # print(attention_maps[0])
     print(np.sum(attention_maps[2], axis=0).shape)
+    # print(np.sum(attention_maps[2], axis=0))
+    # print(np.average(attention_maps[2], axis=0).shape)
+    # np.average(attention_maps[2], axis=0)
+    # print(attention_maps[0][0, 1].shape)
 
     visualize_head(np.average(attention_maps[2], axis=0)[0], i, args.max_seq_len, 0)
     visualize_head(np.average(attention_maps[2], axis=0)[1], i, args.max_seq_len, 1)
@@ -128,7 +145,7 @@ if __name__ == '__main__':
     parser.add_argument('--output_model_prefix', default='model',          type=str, help='output model name prefix')
     # Input parameters
     parser.add_argument('--batch_size',     default=32,   type=int,   help='batch size')
-    parser.add_argument('--max_seq_len',    default=201,  type=int,   help='the maximum size of the input sequence')
+    parser.add_argument('--max_seq_len',    default=2000,  type=int,   help='the maximum size of the input sequence')
     # Train parameters
     parser.add_argument('--epochs',         default=1200,   type=int,   help='the number of epochs')
     parser.add_argument('--lr',             default=1e-4, type=float, help='learning rate')
@@ -138,7 +155,7 @@ if __name__ == '__main__':
     parser.add_argument('--n_layers',       default=3,    type=int,   help='the number of layers in the multi-head attention network')
     parser.add_argument('--n_attn_heads',   default=2,    type=int,   help='the number of multi-head attention heads')
     parser.add_argument('--dropout',        default=0.2,  type=float, help='the residual dropout value')
-    parser.add_argument('--ffn_hidden',     default=256, type=int,   help='the dimension of the feedforward network')
+    parser.add_argument('--ffn_hidden',     default=512, type=int,   help='the dimension of the feedforward network')
     
     args = parser.parse_args()
     
